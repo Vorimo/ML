@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 from matplotlib import pyplot as plt
 from pandas.plotting import scatter_matrix
 from sklearn.metrics import mean_squared_error
@@ -63,5 +64,8 @@ if __name__ == '__main__':
     final_mse = mean_squared_error(final_targets, final_predictions)
     final_rmse = np.sqrt(final_mse)
     print('Final RMSE error:', final_rmse)  # ~25%
+    # saving the model
+    # to load saved model use pickle.load(open(filename, 'rb'))
+    pickle.dump(linear_regression, open('models/model.pkl', 'wb'))
 
     # maybe use grid(randomized) search to improve the model?
