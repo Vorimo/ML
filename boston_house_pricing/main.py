@@ -13,7 +13,7 @@ researchable_field = 'MEDV'
 
 if __name__ == '__main__':
     # loading data, lookup the general details
-    housing_data = load_csv_data("datasets/boston_house_pricing.csv")
+    housing_data = load_csv_data("datasets/boston_house_pricing.csv")  # could be loaded with package classes method
     print('General info:')
     print(housing_data.describe())
     # train set generation
