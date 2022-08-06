@@ -1,52 +1,37 @@
-import pandas as pd
 import numpy as np
 import pickle
-from matplotlib import pyplot as plt
-from pandas.plotting import scatter_matrix
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 
-from boston_house_pricing.selectors.dataframe_selector import DataFrameSelector
+from boston_house_pricing.correlations import draw_correlation_matrix, print_numeric_correlation
+from boston_house_pricing.pipelines import get_data_pipeline
+from loaders import load_csv_data
 
-
-def load_data(path):
-    return pd.read_csv(path, sep=' ')
-
-
-def get_data_pipeline():
-    return Pipeline([
-        ('selector', DataFrameSelector(['RM', 'LSTAT'])),
-        ('std_scaler', StandardScaler())
-    ])
-
+# main researchable field to predict
+researchable_field = 'MEDV'
 
 if __name__ == '__main__':
-    # loading data
-    housing_data = load_data("datasets/boston_house_pricing.csv")
+    # loading data, lookup the general details
+    housing_data = load_csv_data("datasets/boston_house_pricing.csv")
     print('General info:')
     print(housing_data.describe())
+    # train set generation
     train_set, test_set = train_test_split(housing_data, test_size=0.2, random_state=42)
     # drawing a correlation matrix
-    scatter_matrix(housing_data, figsize=(12, 8))
-    # LSTAT, RM are the most correlated parameters
-    plt.show()
+    draw_correlation_matrix(housing_data)
     # looking at correlation numeric values
-    corr_matrix = housing_data.corr()
-    print('Correlation:')
-    print(corr_matrix['MEDV'].sort_values(ascending=False))
-    # prepare data for learning
+    print_numeric_correlation(housing_data, researchable_field)
+    # prepare train data for learning
     pipeline = get_data_pipeline()
     features = pipeline.fit_transform(train_set)
-    targets = train_set['MEDV'].copy()
-    # regression learning
+    targets = train_set[researchable_field].copy()
+    # training the system with linear regression based on housing data
     linear_regression = LinearRegression()
     linear_regression.fit(features, targets)
+    # results for train data
     features_extraction = pipeline.transform(train_set.iloc[:5])
     targets_extraction = targets.iloc[:5]
-    # result
     housing_predictions = linear_regression.predict(features_extraction)
     print('Predictions:', housing_predictions)
     print('Targets:', list(targets_extraction))
@@ -54,9 +39,10 @@ if __name__ == '__main__':
     linear_mse = mean_squared_error(targets_extraction, housing_predictions)
     linear_rmse = np.sqrt(linear_mse)
     print("RMSE error:", linear_rmse)  # ~15%
-    # testing the system
+    # preparing test data for final check
     final_features = pipeline.transform(test_set)
-    final_targets = test_set['MEDV'].copy()
+    final_targets = test_set[researchable_field].copy()
+    # final results for test data
     final_predictions = linear_regression.predict(final_features)
     print('Final predictions:', final_predictions)
     print('Final targets:', list(final_targets))
@@ -65,7 +51,7 @@ if __name__ == '__main__':
     final_rmse = np.sqrt(final_mse)
     print('Final RMSE error:', final_rmse)  # ~25%
     # saving the model
-    # to load saved model use pickle.load(open(filename, 'rb'))
-    pickle.dump(linear_regression, open('models/model.pkl', 'wb'))
+    pickle.dump(linear_regression,
+                open('models/model.pkl', 'wb'))  # to load saved model use pickle.load(open(filename, 'rb'))
 
     # maybe use grid(randomized) search to improve the model?
