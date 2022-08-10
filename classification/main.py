@@ -44,5 +44,3 @@ if __name__ == '__main__':
 
     # linear support vector classifier
     linear_svc_predict_with_checkup(x_train, y_train, five)
-
-    # todo readme
