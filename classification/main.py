@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.datasets import load_digits
+from sklearn.decomposition import PCA
 
 from classification.classifiers import linear_svc_predict_with_checkup, binomial_sgd_classifier_predict_with_checkup, \
     multinomial_sgd_classifier_predict_with_checkup, k_neighbor_classifier_predict_with_checkup
@@ -9,6 +10,13 @@ if __name__ == '__main__':
 
     x = digits_data.data
     y = digits_data.target
+
+    # dimension decrease with PCA algorithm to save 99% of dispersion
+    pca = PCA(n_components=0.99)
+    x = pca.fit_transform(x)
+
+    # should be a vector of number 5 features
+    five = x[15].reshape(1, -1)
 
     # split all data into train and test (80%/20%)
     x_train = x[:1450]
@@ -20,9 +28,6 @@ if __name__ == '__main__':
     shuffle_indexes = np.random.permutation(1450)
     x_train = x_train[shuffle_indexes]
     y_train = y_train[shuffle_indexes]
-
-    # should be a vector of number 5 features
-    five = digits_data.data[15].reshape(1, -1)
 
     # ------------------------------------------
 
