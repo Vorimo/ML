@@ -1,9 +1,6 @@
 from perceptron.datasets import get_prepared_mnist_data
 from perceptron.model import build_model, fit_and_evaluate_model
 
-# todo readme
-
-
 if __name__ == '__main__':
     (x_train, y_train), (x_test, y_test) = get_prepared_mnist_data()
 

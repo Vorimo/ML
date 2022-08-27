@@ -9,7 +9,7 @@ def get_prepared_mnist_data():
     x_train = x_train.astype('float32')
     x_test = x_test.astype('float32')
 
-    # normalize image pixel values by dividing by 255
+    # normalize image pixel values by dividing by 255 to be between 0 and 1
     gray_scale = 255
     x_train /= gray_scale
     x_test /= gray_scale
