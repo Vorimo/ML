@@ -117,8 +117,7 @@ if __name__ == '__main__':
         filepath=checkpoint_prefix,
         save_weights_only=True)
 
-    # fixme make it 20 and train
-    EPOCHS = 1
+    EPOCHS = 20
     history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
 
     one_step_model = OneStep(model, chars_from_ids, ids_from_chars)
