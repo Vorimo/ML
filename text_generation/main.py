@@ -17,8 +17,8 @@ def split_input_target(sequence):
     return input_text, target_text
 
 
-#todo refactoring
-#todo readme
+# todo refactoring
+# todo readme
 if __name__ == '__main__':
     # Read, then decode for py2 compatibility
     text = open('./datasets/dandelion_wine.txt', 'rb').read().decode(encoding='utf-8')
@@ -118,11 +118,11 @@ if __name__ == '__main__':
         filepath=checkpoint_prefix,
         save_weights_only=True)
 
-    EPOCHS = 30
+    EPOCHS = 40
     history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
 
     one_step_model = OneStep(model, chars_from_ids, ids_from_chars)
-    #one_step_model = tf.saved_model.load('./saved_models/one_step')
+    # one_step_model = tf.saved_model.load('./saved_models/one_step')
 
     # prediction
     start = time.time()
