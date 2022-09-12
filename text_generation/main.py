@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-import numpy as np
 import os
 import time
 
@@ -18,9 +17,11 @@ def split_input_target(sequence):
     return input_text, target_text
 
 
+#todo refactoring
+#todo readme
 if __name__ == '__main__':
-    # Read, then decode for py2 compat.
-    text = open('./datasets/shakespeare.txt', 'rb').read().decode(encoding='utf-8')
+    # Read, then decode for py2 compatibility
+    text = open('./datasets/dandelion_wine.txt', 'rb').read().decode(encoding='utf-8')
 
     # length of text is the number of characters in it
     print(f'Length of text: {len(text)} characters')
@@ -117,16 +118,19 @@ if __name__ == '__main__':
         filepath=checkpoint_prefix,
         save_weights_only=True)
 
-    EPOCHS = 20
+    EPOCHS = 30
     history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
 
     one_step_model = OneStep(model, chars_from_ids, ids_from_chars)
+    #one_step_model = tf.saved_model.load('./saved_models/one_step')
 
+    # prediction
     start = time.time()
     states = None
-    next_char = tf.constant(['ROMEO:'])
+    next_char = tf.constant(['Billy:'])
     result = [next_char]
 
+    # generation of 1000 symbols
     for n in range(1000):
         next_char, states = one_step_model.generate_one_step(next_char, states=states)
         result.append(next_char)
@@ -139,4 +143,3 @@ if __name__ == '__main__':
     print('-----')
 
     tf.saved_model.save(one_step_model, './saved_models/one_step')
-    # one_step_reloaded = tf.saved_model.load('./saved_models/one_step')
