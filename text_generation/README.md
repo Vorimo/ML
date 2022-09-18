@@ -1,0 +1,2 @@
+This project demonstrates recurrent neural network of text generation based on english/russian author's stories.
+There are checkpoints and save model functionality to quickly restore model since it's training requires a lot of time

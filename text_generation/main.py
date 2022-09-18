@@ -18,7 +18,6 @@ def split_input_target(sequence):
 
 
 # todo refactoring
-# todo readme
 if __name__ == '__main__':
     # Read, then decode for py2 compatibility
     text = open('./datasets/dandelion_wine.txt', 'rb').read().decode(encoding='utf-8')
