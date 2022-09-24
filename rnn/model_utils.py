@@ -1,8 +1,8 @@
 import tensorflow as tf
 import os
-from text_generation.model.my_model import MyModel
+from rnn.model.my_model import MyModel
 import time
-from text_generation.model.one_step import OneStep
+from rnn.model.one_step import OneStep
 
 
 def generate_model(ids_from_chars):

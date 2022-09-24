@@ -1,5 +1,5 @@
 import tensorflow as tf
-from text_generation.utils import split_input_target
+from rnn.utils import split_input_target
 
 
 def read_data(file_name):

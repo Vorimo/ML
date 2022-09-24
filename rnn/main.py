@@ -1,7 +1,7 @@
 import tensorflow as tf
-from text_generation.data_utils import read_data, generate_dataset
+from rnn.data_utils import read_data, generate_dataset
 
-from text_generation.model_utils import generate_model, train_model, do_prediction
+from rnn.model_utils import generate_model, train_model, do_prediction
 
 # Switch to False if you want to do a new training (could take > 1 hour)
 load_saved_model = True
