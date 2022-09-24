@@ -4,9 +4,9 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
-from boston_house_pricing.correlations import draw_correlation_matrix, print_numeric_correlation
-from boston_house_pricing.pipelines import get_data_pipeline
-from boston_house_pricing.loaders import load_csv_data
+from prediction.correlations import draw_correlation_matrix, print_numeric_correlation
+from prediction.pipelines import get_data_pipeline
+from prediction.loaders import load_csv_data
 
 # main researchable field to predict
 researchable_field = 'MEDV'
