@@ -6,6 +6,7 @@ import pandas as pd
 
 from matplotlib import pyplot as plt
 from numpy import datetime64
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from prophet import Prophet
@@ -21,23 +22,24 @@ prediction_days_period = 14
 if __name__ == '__main__':
     # demandDate - date,storeLocationId - store id,qty - sold products quantity
     # for each store predict next 14 quantities day by day
-    df = pd.read_csv('datasets/total_history.csv')
+    dataset = pd.read_csv('datasets/total_history.csv')
 
-    df.rename(columns={'demandDate': date_column_nickname, 'qty': value_column_nickname}, inplace=True)
+    dataset.rename(columns={'demandDate': date_column_nickname, 'qty': value_column_nickname}, inplace=True)
 
     print("Dataset preparation...")
     grouped_dataframe_dict = {}
     # create a sub dataset for each store
-    for storeId in set(df['storeLocationId'].tolist()):
-        copied_df = df[df['storeLocationId'] == storeId]
-        copied_df = copied_df.drop(columns=['storeLocationId'])
+    for storeId in set(dataset['storeLocationId'].tolist()):
+        df_by_store_id = dataset[dataset['storeLocationId'] == storeId]
+        df_by_store_id = df_by_store_id.drop(columns=['storeLocationId'])
         missing_date_range = pd.date_range(
-            start=start_date, end=end_date).difference(copied_df[date_column_nickname])
+            start=start_date, end=end_date).difference(df_by_store_id[date_column_nickname])
+        # filling df with missing dates records
         missing_dates_df = pd.DataFrame(missing_date_range, columns=[date_column_nickname])
         missing_dates_df[value_column_nickname] = 0
-        copied_df = pd.concat([copied_df, missing_dates_df])
-        copied_df = copied_df.astype({'ds': datetime64})
-        grouped_dataframe_dict[storeId] = copied_df
+        df_by_store_id = pd.concat([df_by_store_id, missing_dates_df])
+        df_by_store_id = df_by_store_id.astype({'ds': datetime64})
+        grouped_dataframe_dict[storeId] = df_by_store_id
 
     print("Model training...")
 
@@ -54,8 +56,7 @@ if __name__ == '__main__':
         # model.plot(prediction)
         # plt.show()
 
-
-    # data visualization
+    # data visualization (optional, for manual way)
     """
     for grouped_df in grouped_dataframe_dict.items():
         grouped_df[1]['ds'] = grouped_df[1]['ds'].map(datetime.datetime.toordinal)
@@ -79,9 +80,25 @@ if __name__ == '__main__':
         train_y = train_set[value_column_nickname].array
         linear_regression = LinearRegression()
         linear_regression.fit(poly_X, train_y)
+
+        # test the model
+        ordinal_test_set = test_set[date_column_nickname].map(datetime.datetime.toordinal).array
+        test_X = np.reshape(ordinal_test_set, (-1, 1))
+        poly_test_X = poly_features.fit_transform(test_X)
+        test_y = test_set[value_column_nickname].array
+
         starting_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
         # generate 14 dates next to last date
         date_list = np.array([starting_date + datetime.timedelta(days=x + 1) for x in range(prediction_days_period)])
+        test_predictions = []
+        for test_date in poly_test_X:
+            test_predictions.append(
+                linear_regression.predict(np.reshape([test_date], (-1, 2))))
+        # errors calculation
+        linear_mse = mean_squared_error(test_y, test_predictions)
+        linear_rmse = np.sqrt(linear_mse)
+        print("RMSE error:", linear_rmse)
+
         predictions = []
         for date in date_list:
             predictions.append(
