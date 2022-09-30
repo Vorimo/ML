@@ -1,13 +1,10 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import pickle
+import datetime
 
+import numpy as np
 import pandas as pd
 from numpy import datetime64
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from training.correlation_utils import draw_correlation_matrix, print_numeric_correlation
 from prophet import Prophet
 
 start_date = "2021-09-10"
@@ -20,18 +17,6 @@ prediction_days_period = 14
 if __name__ == '__main__':
     # demandDate - date,storeLocationId - store id,qty - sold products quantity
     # for each store predict next 14 quantities day by day
-
-    # Manual way
-
-    # train set generation
-    # train_set, test_set = train_test_split(dataset, test_size=0.2, random_state=42)
-
-    # drawing a correlation matrix
-    # draw_correlation_matrix(dataset)
-    # looking at correlation numeric values
-    # print_numeric_correlation(dataset, 'qty')
-
-    # Prophet way:
     df = pd.read_csv('datasets/total_history.csv')
 
     df.rename(columns={'demandDate': date_column_nickname, 'qty': value_column_nickname}, inplace=True)
@@ -51,6 +36,9 @@ if __name__ == '__main__':
         grouped_dataframe_dict[storeId] = copied_df
 
     print("Model training...")
+
+    # Prophet way:
+    """
     for grouped_df in grouped_dataframe_dict.items():
         model = Prophet()
         model.fit(grouped_df[1])
@@ -61,3 +49,21 @@ if __name__ == '__main__':
         print(f"Prediction for store \'{grouped_df[0]}\':\n{prediction_sublist}\n-----")
         # model.plot(prediction)
         # plt.show()
+    """
+
+    # Manual way
+
+    for grouped_df in grouped_dataframe_dict.items():
+        # train set generation
+        train_set, test_set = train_test_split(grouped_df[1], test_size=0.2, random_state=42)
+        train_X = np.reshape(train_set[date_column_nickname].map(datetime.datetime.toordinal).array, (-1, 1))
+        train_y = train_set[value_column_nickname].array
+        linear_regression = LinearRegression()
+        linear_regression.fit(train_X, train_y)
+        starting_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+        date_list = np.array([starting_date + datetime.timedelta(days=x + 1) for x in range(prediction_days_period)])
+        predictions = []
+        for date in date_list:
+            test_X = train_X[0].reshape(-1, 1)
+            predictions.append(linear_regression.predict(np.reshape([date.toordinal()], (-1, 1))))
+        print(f"Prediction for store \'{grouped_df[0]}\':\n{predictions}\n-----")
