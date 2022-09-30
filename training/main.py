@@ -42,7 +42,7 @@ if __name__ == '__main__':
     print("Model training...")
 
     # Prophet way:
-    """
+
     for grouped_df in grouped_dataframe_dict.items():
         model = Prophet()
         model.fit(grouped_df[1])
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         print(f"Prediction for store \'{grouped_df[0]}\':\n{prediction_sublist}\n-----")
         # model.plot(prediction)
         # plt.show()
-    """
+
 
     # data visualization
     """
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     """
 
     # Manual way
-
+    """
     for grouped_df in grouped_dataframe_dict.items():
         # train set generation
         train_set, test_set = train_test_split(grouped_df[1], test_size=0.2, random_state=42)
@@ -87,3 +87,4 @@ if __name__ == '__main__':
             predictions.append(
                 linear_regression.predict(poly_features.fit_transform(np.reshape([date.toordinal()], (-1, 1)))))
         print(f"Prediction for store \'{grouped_df[0]}\':\n{predictions}\n-----")
+    """
