@@ -1,11 +1,15 @@
 import datetime
 
+import seaborn as sns
 import numpy as np
 import pandas as pd
+
+from matplotlib import pyplot as plt
 from numpy import datetime64
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from prophet import Prophet
+from sklearn.preprocessing import PolynomialFeatures
 
 start_date = "2021-09-10"
 end_date = "2022-09-25"
@@ -51,19 +55,35 @@ if __name__ == '__main__':
         # plt.show()
     """
 
+    # data visualization
+    """
+    for grouped_df in grouped_dataframe_dict.items():
+        grouped_df[1]['ds'] = grouped_df[1]['ds'].map(datetime.datetime.toordinal)
+        plt.figure()  # Creating a rectangle (figure) for each plot
+        # Regression Plot also by default includes
+        # best-fitting regression line
+        # which can be turned off via `fit_reg=False`
+        sns.regplot(x='ds', y='y', data=grouped_df[1])
+    plt.show()
+    """
+
     # Manual way
 
     for grouped_df in grouped_dataframe_dict.items():
         # train set generation
         train_set, test_set = train_test_split(grouped_df[1], test_size=0.2, random_state=42)
-        train_X = np.reshape(train_set[date_column_nickname].map(datetime.datetime.toordinal).array, (-1, 1))
+        ordinal_train_set = train_set[date_column_nickname].map(datetime.datetime.toordinal).array
+        train_X = np.reshape(ordinal_train_set, (-1, 1))
+        poly_features = PolynomialFeatures(degree=2, include_bias=False)
+        poly_X = poly_features.fit_transform(train_X)
         train_y = train_set[value_column_nickname].array
         linear_regression = LinearRegression()
-        linear_regression.fit(train_X, train_y)
+        linear_regression.fit(poly_X, train_y)
         starting_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+        # generate 14 dates next to last date
         date_list = np.array([starting_date + datetime.timedelta(days=x + 1) for x in range(prediction_days_period)])
         predictions = []
         for date in date_list:
-            test_X = train_X[0].reshape(-1, 1)
-            predictions.append(linear_regression.predict(np.reshape([date.toordinal()], (-1, 1))))
+            predictions.append(
+                linear_regression.predict(poly_features.fit_transform(np.reshape([date.toordinal()], (-1, 1)))))
         print(f"Prediction for store \'{grouped_df[0]}\':\n{predictions}\n-----")
