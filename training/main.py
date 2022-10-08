@@ -1,16 +1,8 @@
-import datetime
-
-import seaborn as sns
-import numpy as np
 import pandas as pd
 
 from matplotlib import pyplot as plt
 from numpy import datetime64
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
 from prophet import Prophet
-from sklearn.preprocessing import PolynomialFeatures
 
 start_date = "2021-09-10"
 end_date = "2022-09-25"
@@ -46,7 +38,8 @@ if __name__ == '__main__':
     # Prophet way:
 
     for grouped_df in grouped_dataframe_dict.items():
-        model = Prophet()
+        model = Prophet(changepoint_range=1, weekly_seasonality=True, yearly_seasonality=False, daily_seasonality=False,
+                        seasonality_prior_scale=5, changepoint_prior_scale=0.5, seasonality_mode='multiplicative')
         model.fit(grouped_df[1])
         future = model.make_future_dataframe(periods=prediction_days_period)
         prediction = model.predict(future)
@@ -54,6 +47,7 @@ if __name__ == '__main__':
             .tail(prediction_days_period)
         print(f"Prediction for store \'{grouped_df[0]}\':\n{prediction_sublist}\n-----")
         # model.plot(prediction)
+        # model.plot_components(prediction)
         # plt.show()
 
     # data visualization (optional, for manual way)
