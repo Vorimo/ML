@@ -12,6 +12,17 @@ date_column_nickname = 'ds'
 value_column_nickname = 'y'
 value_prediction_column_nickname = 'yhat'
 prediction_days_period = 14
+evaluation_metric = 'mae'
+
+
+def calculate_metrics(model, data):
+    model.fit(data)
+    df_cv = cross_validation(model, initial='14 days', period='30 days', horizon='14 days')
+    plot_cross_validation_metric(df_cv, metric=evaluation_metric)
+    # plt.show()
+    df_p = performance_metrics(df_cv, metrics=[evaluation_metric])
+    print(df_p)
+
 
 if __name__ == '__main__':
     # demandDate - date,storeLocationId - store id,qty - sold products quantity
@@ -41,21 +52,13 @@ if __name__ == '__main__':
 
     for grouped_df in grouped_dataframe_dict.items():
         simple_model = Prophet()
-        simple_model.fit(grouped_df[1])
-        df_cv = cross_validation(simple_model, initial='14 days', period='30 days', horizon='14 days')
-        plot_cross_validation_metric(df_cv, metric='mae')
-        plt.show()
-        df_p = performance_metrics(df_cv, metrics=['mae'])
-        print(f"Error before optimization:\n{df_p}")
+        print("Calculating metrics before optimization...")
+        calculate_metrics(simple_model, grouped_df[1])
         optimized_model = Prophet(changepoint_range=1, weekly_seasonality=True, yearly_seasonality=False,
                                   daily_seasonality=False, seasonality_prior_scale=5, changepoint_prior_scale=0.5,
                                   seasonality_mode='multiplicative')
-        optimized_model.fit(grouped_df[1])
-        df_cv = cross_validation(optimized_model, initial='14 days', period='30 days', horizon='14 days')
-        plot_cross_validation_metric(df_cv, metric='mae')
-        plt.show()
-        df_p = performance_metrics(df_cv, metrics=['mae'])
-        print(f"Error after optimization:\n{df_p}")
+        print("Calculating metrics after optimization...")
+        calculate_metrics(optimized_model, grouped_df[1])
         future = optimized_model.make_future_dataframe(periods=prediction_days_period)
         prediction = optimized_model.predict(future)
         prediction_sublist = prediction[[date_column_nickname, value_prediction_column_nickname]] \
