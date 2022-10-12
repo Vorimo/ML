@@ -1,8 +1,10 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 
-from matplotlib import pyplot as plt
 from numpy import datetime64
 from prophet import Prophet
+from prophet.diagnostics import cross_validation, performance_metrics
+from prophet.plot import plot_cross_validation_metric
 
 start_date = "2021-09-10"
 end_date = "2022-09-25"
@@ -38,11 +40,24 @@ if __name__ == '__main__':
     # Prophet way:
 
     for grouped_df in grouped_dataframe_dict.items():
-        model = Prophet(changepoint_range=1, weekly_seasonality=True, yearly_seasonality=False, daily_seasonality=False,
-                        seasonality_prior_scale=5, changepoint_prior_scale=0.5, seasonality_mode='multiplicative')
-        model.fit(grouped_df[1])
-        future = model.make_future_dataframe(periods=prediction_days_period)
-        prediction = model.predict(future)
+        simple_model = Prophet()
+        simple_model.fit(grouped_df[1])
+        df_cv = cross_validation(simple_model, initial='14 days', period='30 days', horizon='14 days')
+        plot_cross_validation_metric(df_cv, metric='mae')
+        plt.show()
+        df_p = performance_metrics(df_cv, metrics=['mae'])
+        print(f"Error before optimization:\n{df_p}")
+        optimized_model = Prophet(changepoint_range=1, weekly_seasonality=True, yearly_seasonality=False,
+                                  daily_seasonality=False, seasonality_prior_scale=5, changepoint_prior_scale=0.5,
+                                  seasonality_mode='multiplicative')
+        optimized_model.fit(grouped_df[1])
+        df_cv = cross_validation(optimized_model, initial='14 days', period='30 days', horizon='14 days')
+        plot_cross_validation_metric(df_cv, metric='mae')
+        plt.show()
+        df_p = performance_metrics(df_cv, metrics=['mae'])
+        print(f"Error after optimization:\n{df_p}")
+        future = optimized_model.make_future_dataframe(periods=prediction_days_period)
+        prediction = optimized_model.predict(future)
         prediction_sublist = prediction[[date_column_nickname, value_prediction_column_nickname]] \
             .tail(prediction_days_period)
         print(f"Prediction for store \'{grouped_df[0]}\':\n{prediction_sublist}\n-----")
