@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from numpy import datetime64
@@ -15,11 +14,9 @@ prediction_days_period = 14
 evaluation_metric = 'mae'
 
 
-def calculate_metrics(model, data):
-    model.fit(data)
+def calculate_metrics(model):
     df_cv = cross_validation(model, initial='14 days', period='30 days', horizon='14 days')
     plot_cross_validation_metric(df_cv, metric=evaluation_metric)
-    # plt.show()
     df_p = performance_metrics(df_cv, metrics=[evaluation_metric])
     print(df_p)
 
@@ -48,72 +45,14 @@ if __name__ == '__main__':
 
     print("Model training...")
 
-    # Prophet way:
-
     for grouped_df in grouped_dataframe_dict.items():
-        simple_model = Prophet()
-        print("Calculating metrics before optimization...")
-        calculate_metrics(simple_model, grouped_df[1])
         optimized_model = Prophet(changepoint_range=1, weekly_seasonality=True, yearly_seasonality=False,
                                   daily_seasonality=False, seasonality_prior_scale=5, changepoint_prior_scale=0.5,
                                   seasonality_mode='multiplicative')
-        print("Calculating metrics after optimization...")
-        calculate_metrics(optimized_model, grouped_df[1])
+        print("Calculating metrics...")
+        calculate_metrics(optimized_model)
         future = optimized_model.make_future_dataframe(periods=prediction_days_period)
         prediction = optimized_model.predict(future)
         prediction_sublist = prediction[[date_column_nickname, value_prediction_column_nickname]] \
             .tail(prediction_days_period)
         print(f"Prediction for store \'{grouped_df[0]}\':\n{prediction_sublist}\n-----")
-        # model.plot(prediction)
-        # model.plot_components(prediction)
-        # plt.show()
-
-    # data visualization (optional, for manual way)
-    """
-    for grouped_df in grouped_dataframe_dict.items():
-        grouped_df[1]['ds'] = grouped_df[1]['ds'].map(datetime.datetime.toordinal)
-        plt.figure()  # Creating a rectangle (figure) for each plot
-        # Regression Plot also by default includes
-        # best-fitting regression line
-        # which can be turned off via `fit_reg=False`
-        sns.regplot(x='ds', y='y', data=grouped_df[1])
-    plt.show()
-    """
-
-    # Manual way
-    """
-    for grouped_df in grouped_dataframe_dict.items():
-        # train set generation
-        train_set, test_set = train_test_split(grouped_df[1], test_size=0.2, random_state=42)
-        ordinal_train_set = train_set[date_column_nickname].map(datetime.datetime.toordinal).array
-        train_X = np.reshape(ordinal_train_set, (-1, 1))
-        poly_features = PolynomialFeatures(degree=2, include_bias=False)
-        poly_X = poly_features.fit_transform(train_X)
-        train_y = train_set[value_column_nickname].array
-        linear_regression = LinearRegression()
-        linear_regression.fit(poly_X, train_y)
-
-        # test the model
-        ordinal_test_set = test_set[date_column_nickname].map(datetime.datetime.toordinal).array
-        test_X = np.reshape(ordinal_test_set, (-1, 1))
-        poly_test_X = poly_features.fit_transform(test_X)
-        test_y = test_set[value_column_nickname].array
-
-        starting_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-        # generate 14 dates next to last date
-        date_list = np.array([starting_date + datetime.timedelta(days=x + 1) for x in range(prediction_days_period)])
-        test_predictions = []
-        for test_date in poly_test_X:
-            test_predictions.append(
-                linear_regression.predict(np.reshape([test_date], (-1, 2))))
-        # errors calculation
-        linear_mse = mean_squared_error(test_y, test_predictions)
-        linear_rmse = np.sqrt(linear_mse)
-        print("RMSE error:", linear_rmse)
-
-        predictions = []
-        for date in date_list:
-            predictions.append(
-                linear_regression.predict(poly_features.fit_transform(np.reshape([date.toordinal()], (-1, 1)))))
-        print(f"Prediction for store \'{grouped_df[0]}\':\n{predictions}\n-----")
-    """
