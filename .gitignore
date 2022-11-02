@@ -131,3 +131,4 @@ dmypy.json
 *.ipynb
 */logs/
 */checkpoints/
+/prediction/saved_model/
