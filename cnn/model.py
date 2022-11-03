@@ -1,34 +1,32 @@
-import tensorflow as tf
-from tensorflow.python.keras import layers, models
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from keras.models import Sequential
 
 
-def build_model():
+def build_model(x_train, y_train, x_val, y_val, x_test, y_test):
     # build base convolution and pooling layers
-    model = models.Sequential()
-    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-
+    model = Sequential()
+    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
     # add full connection layers
-    model.add(layers.Flatten())
-    model.add(layers.Dense(64, activation='tanh'))
-    model.add(layers.Dense(10))
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu'))
+    model.add(Dense(10, activation='softmax'))
 
     print(model.summary())
-    return model
+    # todo bad result! ~72%
 
-
-def fit_and_evaluate_model(model, x_train, y_train, x_test, y_test):
-    model.compile(optimizer='adam',
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    model.compile(optimizer='rmsprop',
+                  loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    history = model.fit(x_train, y_train, epochs=10,
-                        validation_data=(x_test, y_test))
+    epochs = 15
+    batches = 100
+    history = model.fit(x_train, y_train, epochs=epochs, batch_size=batches,
+                        validation_data=(x_val, y_val))
 
-    test_loss, test_acc = model.evaluate(x_test, y_test, verbose=2)
-
-    print('Test accuracy', test_acc)  # close to 71%
+    print('Control evaluation data:')
+    model.evaluate(x_test, y_test)
     return history

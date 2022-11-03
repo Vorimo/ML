@@ -1,28 +1,31 @@
 from matplotlib import pyplot as plt
 
 
-def show_cifar_10_preview(x_train, y_train):
-    class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
-                   'dog', 'frog', 'horse', 'ship', 'truck']
-    plt.figure(figsize=(10, 10))
-    for i in range(25):
-        plt.subplot(5, 5, i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.grid(False)
-        plt.imshow(x_train[i])
-        # The CIFAR labels happen to be arrays,
-        # which is why you need the extra index
-        plt.xlabel(class_names[y_train[i][0]])
-    plt.show()
-
-
 def show_model_evaluation(history):
-    # draw model evaluation function
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label='val_accuracy')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.ylim([0.5, 1])
-    plt.legend(loc='lower right')
+    plot_model_accuracy(history)
+    plot_model_loss(history)
     plt.show()
+
+
+def plot_model_accuracy(history):
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+    epochs = range(1, len(acc) + 1)
+    plt.plot(epochs, acc, 'bo', label='Training acc')
+    plt.plot(epochs, val_acc, 'b', label='Validation acc')
+    plt.title('Training and validation accuracy')
+    plt.legend()
+    plt.figure()
+
+
+def plot_model_loss(history):
+    loss = history.history['loss']
+    epochs = range(1, len(loss) + 1)
+    val_loss = history.history['val_loss']
+    # draw model evaluation function
+    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.plot(epochs, val_loss, 'b', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
