@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     model = Sequential()
     model.add(Dense(5, input_shape=(5,), activation='relu'))
-    model.add(Dense(5, activation='relu'))
+    model.add(Dense(10, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(loss='binary_crossentropy',
